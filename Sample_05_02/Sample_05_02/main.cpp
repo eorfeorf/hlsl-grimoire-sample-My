@@ -100,8 +100,31 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         //////////////////////////////////////
 
         // step-3 コントローラー左スティックでスポットライトを移動させる
+        light.spPosition.x -= g_pad[0]->GetLStickXF();
+        if (g_pad[0]->IsPress(enButtonB))
+        {
+            light.spPosition.y += g_pad[0]->GetLStickYF();
+        }
+        else
+        {
+            light.spPosition.z -= g_pad[0]->GetLStickYF();
+        }
 
         // step-4 コントローラー右スティックでスポットライトを回転させる
+        Quaternion qRotY;
+        qRotY.SetRotationY(g_pad[0]->GetRStickXF() * 0.01f);
+        qRotY.Apply(light.spDirection);
+
+        Vector3 rotAxis;
+        rotAxis.Cross(g_vec3AxisY, light.spDirection);
+        Quaternion qRotX;
+        qRotX.SetRotation(rotAxis, g_pad[0]->GetRStickYF() * 0.01f);
+        qRotX.Apply(light.spDirection);
+
+        Quaternion qRot;
+        qRot.SetRotation({ 0.0f, 0.0f, -1.0f }, light.spDirection);
+
+        lightModel.UpdateWorldMatrix(light.spPosition, qRot, g_vec3One);
 		
         // 背景モデルをドロー
         bgModel.Draw(renderContext);
