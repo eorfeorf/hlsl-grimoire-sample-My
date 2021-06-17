@@ -74,15 +74,8 @@ SPSIn VSMain(SVSIn vsIn, uniform bool hasSkin)
 float4 PSMain(SPSIn psIn) : SV_Target0
 {
     // step-7 ピクセルの法線とライトの方向の内積を計算する
-    float t = dot(psIn.normal, ligDirection);
-    //t *= -1;
-    //t = (t - 0.5f) * 2.0f;
-
-    // step-8 内積の結果が0以下なら0にする
-    if (t < 0.0f)
-    {
-        t = 0.0f;
-    }
+    //float t = max(dot(psIn.normal , -ligDirection), 0);
+    float t = max(dot(psIn.normal , -ligDirection), 0) * 0.5 + 0.5;
 
     // step-9 ピクセルが受けているライトの光を求める
     float diffuseLig = ligColor * t;
