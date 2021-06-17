@@ -2,6 +2,12 @@
 #include "system/system.h"
 
 // step-1 ディレクションライト用の構造体を定義する
+struct DirectionLight
+{
+    Vector3 dir;
+    float pad;
+    Vector3 color;
+};
 
 ///////////////////////////////////////////////////////////////////
 // ウィンドウプログラムのメイン関数
@@ -19,8 +25,29 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     g_camera3D->SetTarget({ 0.0f, 0.0f, 0.0f });
 
     // step-2 ディレクションライトのデータを作成する
+    DirectionLight directionLig;
+    directionLig.dir.x = 1.0f;
+    directionLig.dir.y = -1.0f;
+    directionLig.dir.z = -1.0f;
+
+    // 正規化
+    directionLig.dir.Normalize();
+
+    // カラー
+    directionLig.color.x = 0.5f;
+    directionLig.color.y = 0.5f;
+    directionLig.color.z = 0.5f;
 
     // step-3 球体モデルを初期化する
+    ModelInitData modelInitData;
+    modelInitData.m_tkmFilePath = "Assets/modelData/teapot.tkm";
+    modelInitData.m_fxFilePath = "Assets/shader/sample.fx";
+
+    modelInitData.m_expandConstantBuffer = &directionLig;
+    modelInitData.m_expandConstantBufferSize = sizeof(directionLig);
+    
+    Model model;
+    model.Init(modelInitData);
 
     //////////////////////////////////////
     // 初期化を行うコードを書くのはここまで！！！
@@ -37,6 +64,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         //////////////////////////////////////
 
         // step-4 モデルをドローする
+        model.Draw(renderContext);
 
         //////////////////////////////////////
         // 絵を描くコードを書くのはここまで！！！

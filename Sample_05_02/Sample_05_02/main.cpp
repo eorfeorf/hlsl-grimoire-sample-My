@@ -19,6 +19,12 @@ struct Light
     float ptRange;          // 影響範囲
 
     // step-1 ライト構造体にスポットライト用のメンバ変数を追加
+    Vector3 spPosition;
+    float pad3;
+    Vector3 spColor;
+    float spRange;
+    Vector3 spDirection;
+    float spAngle;
 
     Vector3 eyePos;         // 視点の位置
     float pad4;
@@ -58,6 +64,21 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     InitAmbientLight(light);
 
     // step-2 スポットライトのデータを初期化する
+    light.spPosition.x = 0.0f;
+    light.spPosition.y = 50.0f;
+    light.spPosition.z = 0.0f;
+
+    light.spColor.x = 10.0f;
+    light.spColor.y = 10.0f;
+    light.spColor.z = 10.0f;
+
+    light.spDirection.x = 1.0f;
+    light.spDirection.y = -1.0f;
+    light.spDirection.z = 1.0f;
+    light.spDirection.Normalize();
+
+    light.spRange = 300.0f;
+    light.spAngle = Math::DegToRad(25.0f);
 
     // モデルを初期化する
     // モデルを初期化するための情報を構築する

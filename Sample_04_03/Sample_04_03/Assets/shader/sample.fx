@@ -36,6 +36,7 @@ cbuffer DirectionLightCb : register(b1)
     float3 ligColor;        // ライトのカラー
 
     // step-3 視点のデータにアクセスするための変数を定数バッファーに追加する
+    float3 eyePos;
 };
 
 ///////////////////////////////////////////
@@ -57,7 +58,7 @@ SPSIn VSMain(SVSIn vsIn, uniform bool hasSkin)
     SPSIn psIn;
 
     psIn.pos = mul(mWorld, vsIn.pos);   // モデルの頂点をワールド座標系に変換
-    psIn.worldPos = vsIn.pos;
+    psIn.worldPos = vsIn.pos.xyz;
     psIn.pos = mul(mView, psIn.pos);    // ワールド座標系からカメラ座標系に変換
     psIn.pos = mul(mProj, psIn.pos);    // カメラ座標系からスクリーン座標系に変換
 
@@ -87,21 +88,33 @@ float4 PSMain(SPSIn psIn) : SV_Target0
     float3 diffuseLig = ligColor * t;
 
     // step-4 反射ベクトルを求める
+    float3 refVec = reflect(ligDirection, psIn.normal);
 
     // step-5 光が当たったサーフェイスから視点に伸びるベクトルを求める
+    float3 toEye = eyePos - psIn.worldPos;
+    toEye = normalize(toEye);
 
     // step-6 鏡面反射の強さを求める
+    t = dot(refVec, toEye);
+    if (t < 0.0f)
+    {
+        t = 0.0f;
+    }
 
     // step-7 鏡面反射の強さを絞る
+    t = pow(t, 5.0f);
 
     // step-8 鏡面反射光を求める
+    float3 specularLig = ligColor * t;
 
     // step-9 拡散反射光と鏡面反射光を足し算して、最終的な光を求める
+    float3 lig = diffuseLig + specularLig;
 
     // テクスチャからカラーをフェッチする
     float4 finalColor = g_texture.Sample(g_sampler, psIn.uv);
 
     // step-10 テクスチャカラーに求めた光を乗算して最終出力カラーを求める
+    finalColor.xyz *= lig;
 
     return finalColor;
 }
