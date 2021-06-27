@@ -41,6 +41,10 @@ float4 PSMain(PSInput In) : SV_Target0
     float4 color = colorTexture.Sample(Sampler, In.uv);
 
     // step-1 チェッカーボードワイプを実装する
+    float t = floor(In.pos.y / 128.0f); // 小数点を捨てて行番号を求める
+    t = fmod(t, 2.0f); // 行を偶数と奇数に分ける
+    t = (int)fmod(In.pos.x + 64.0f * t, 128.0f); // 奇数ならずらしてワイプ
+    clip(t - wipeSize);
 
     return color;
 }
