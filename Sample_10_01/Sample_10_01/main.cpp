@@ -18,10 +18,32 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     //////////////////////////////////////
 
     // step-1 オフスクリーン描画用のレンダリングターゲットを作成
+    RenderTarget offscreenRenderTarget;
+    offscreenRenderTarget.Create(1280, 720, 1,1,DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_D32_FLOAT);
 
     // step-2 各種モデルを初期化する
+    // 箱
+    ModelInitData boxModelInitData;
+    boxModelInitData.m_tkmFilePath = "Assets/modelData/box.tkm";
+    boxModelInitData.m_fxFilePath = "Assets/shader/sample3D.fx";
+    Model boxModel;
+    boxModel.Init(boxModelInitData);
+    boxModel.UpdateWorldMatrix({100.0f, 0.0f, 0.0f}, g_quatIdentity, g_vec3One);
+    // 背景
+    ModelInitData bgModelInitData;
+    bgModelInitData.m_tkmFilePath = "Assets/modelData/bg/bg.tkm";
+    bgModelInitData.m_fxFilePath = "Assets/shader/sample3D.fx";
+    Model bgModel;
+    bgModel.Init(bgModelInitData);
+    // プレイヤーモデル
+    ModelInitData plModelInitData;
+    plModelInitData.m_tkmFilePath = "Assets/modelData/sample.tkm";
+    plModelInitData.m_fxFilePath = "Assets/shader/sample3D.fx";
+    Model plModel;
+    plModel.Init(plModelInitData);
 
     // step-3 箱モデルに貼り付けるテクスチャを変更する
+    boxModel.ChangeAlbedoMap("", offscreenRenderTarget.GetRenderTargetTexture());
 
     Vector3 plPos;
 
@@ -48,12 +70,26 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         //////////////////////////////////////
 
         // step-4 レンダリングターゲットをoffscreenRenderTargetに変更する
+        RenderTarget* rtArray[] = { &offscreenRenderTarget };
+        renderContext.WaitUntilToPossibleSetRenderTargets(1, rtArray);
+        renderContext.SetRenderTargets(1, rtArray);
+        renderContext.ClearRenderTargetViews(1, rtArray);
 
         // step-5 offscreenRenderTargetに背景、プレイヤーを描画する
+        bgModel.Draw(renderContext);
+        plModel.Draw(renderContext);
+        renderContext.WaitUntilFinishDrawingToRenderTargets(1, rtArray);
 
         // step-6 画面に表示されるレンダリングターゲットに戻す
+        renderContext.SetRenderTarget(
+            g_graphicsEngine->GetCurrentFrameBuffuerRTV(),
+            g_graphicsEngine->GetCurrentFrameBuffuerDSV()
+        );
 
         // step-7 画面に表示されるレンダリングターゲットに各種モデルを描画する
+        bgModel.Draw(renderContext);
+        plModel.Draw(renderContext);
+        boxModel.Draw(renderContext);
 
         //////////////////////////////////////
         //絵を描くコードを書くのはここまで！！！
